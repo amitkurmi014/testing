@@ -2,46 +2,46 @@ import requests
 from parsel import Selector
 
 
-for i in range(1,51):
+for i in range(1,2):
     r = requests.get(f'https://books.toscrape.com/catalogue/page-{i}.html')
     response = Selector(text=r.text)
 
 
 def tittle(response):
-    for list in response.xpath('//li/article'):
-        title = list.xpath('.//h3/a/text()').get()
-        print(title) 
+    # for list in response.xpath('//li/article'):
+        title = response.xpath('.//h3/a/text()').get()
+        return(title)
         
 
-def price(response):
-    for list in response.xpath('//li/article'):
-        price = list.xpath('//*[@id="default"]/div/div/div/div/section/div[2]/ol/li[1]/article/div[2]/p[1]').get()
-        print(price)
+def product_price(response):
+    # for list in response.xpath('//li/article'):
+        price = response.xpath('.//p[@class="price_color"]/text()').get()
+        return(price)
 
 
 def available(response):
-    for list in response.xpath('//li/article'):
-        available = list.xpath('//*[@id="default"]/div/div/div/div/section/div[2]/ol/li[1]/article/div[2]/p[2]').getall()
-        print(available)
+    # for list in response.xpath('//li/article'):
+        s_available = response.xpath('.//p[@class="instock availability"]/text()').get().split()[1]
+        return s_available
 
 
 def url(response):
-    for list in response.xpath('//li/article'):
-        image_url = list.xpath('//*[@id="default"]/div/div/div/div/section/div[2]/ol/li[1]/article/div[1]/a/img').get()
-        
-        print(image_url)           
+    # for list in response.xpath('//li/article'):
+        image_url = response.xpath('.//img/@src').get()
+        final_url = "https://books.toscrape.com/" + image_url 
+        return final_url          
 
 
 def rating(response):
-    for list in response.xpath('//li/article'):
-        rating = list.xpath('//*[@id="default"]/div/div/div/div/section/div[2]/ol/li[1]/article/p').getall()
-        print(rating)                  
+    # for list in response.xpath('//li/article'):
+        rate = response.xpath('.//p[@class]').get().split(' ')[2]
+        return (rate)                
 
-
-print(f"""
-tittle: {tittle(response)}
-price: {price(response)}
-available: {available(response)}
-image_url: {url(response)}
-rating: {rating(response)}
+for content in response.xpath('//li/article'):
+  print(f"""
+tittle: {tittle(content)}
+price: {product_price(content)}
+available: {available(content)}
+image_url: {url(content)}
+rating: {rating(content)}
 """)
