@@ -1,11 +1,8 @@
 import requests
 from parsel import Selector
-
-
-for i in range(1,2):
-    r = requests.get(f'https://books.toscrape.com/catalogue/page-{i}.html')
-    response = Selector(text=r.text)
-
+import json
+ 
+data =[]
 
 def tittle(response):
     # for list in response.xpath('//li/article'):
@@ -21,27 +18,43 @@ def product_price(response):
 
 def available(response):
     # for list in response.xpath('//li/article'):
-        s_available = response.xpath('.//p[@class="instock availability"]/text()').get().split()[1]
-        return s_available
+        s_available = response.xpath('.//p[@class = "instock availability"]/text()').getall()
+        clean =''.join(x.strip() for x in  s_available if x.strip())
+        return clean
+        # another way
+        # if s_available:
+        #     s_available = s_available.split()[1]
+        # else:
+        #     "Out of stock"
+        
 
 
 def url(response):
     # for list in response.xpath('//li/article'):
         image_url = response.xpath('.//img/@src').get()
         final_url = "https://books.toscrape.com/" + image_url 
-        return final_url          
+        return (final_url)          
 
 
 def rating(response):
     # for list in response.xpath('//li/article'):
-        rate = response.xpath('.//p[@class]').get().split(' ')[2]
+        rate = response.xpath('.//p/@class').get().split()[1]
         return (rate)                
 
-for content in response.xpath('//li/article'):
-  print(f"""
-tittle: {tittle(content)}
-price: {product_price(content)}
-available: {available(content)}
-image_url: {url(content)}
-rating: {rating(content)}
-""")
+for i in range(1,51):
+    r = requests.get(f'https://books.toscrape.com/catalogue/page-{i}.html')
+    response = Selector(r.text)
+    for content in response.xpath('//li/article'):
+        web_data = {
+            "tittle": tittle(content),
+            "price": product_price(content),
+            "availability": available(content),
+            "image_url": url(content),
+            "rating": rating(content)
+        }
+        data.append(web_data)
+    
+    with open("data.json","w",encoding='utf-8') as d:
+        json.dump(data,d,ensure_ascii=False,indent=4)
+    
+    print(r.status_code)
